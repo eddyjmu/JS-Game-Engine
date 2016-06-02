@@ -1,5 +1,5 @@
-var fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0;
-var entities = [];
+var fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0, selected=null, oldSelected=null;
+var entities = []; var selectedEvents = []; var mouseEvents = [];
 function gamespace(){
 	this.canvas = document.getElementById('gamespace');
 	this.initialize = function(){
@@ -8,80 +8,60 @@ function gamespace(){
 		this.context = this.canvas.getContext("2d");
 		document.body.insertBefore(this.canvas,document.body.childNodes[0]);
 	};
-	/*this.clear = function(){
-		this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
-	};*/
 }
 function gamestate(){
-	/*this.acceptinput = function(){
-		//checkEntitiesClicked();
-	};*/
 	this.updatestate = function(){
 		moveEntities();
+		emptySelectedEventQueue();
 	};
 	this.renderstate = function(){
 		gamespace.context.clearRect(0,0,gamespace.canvas.width,gamespace.canvas.height);
 		drawEntities();
-		//gamespace.clear();
-		//entities.forEach();
 	};
 	this.run = function(){
-		//gamestate.acceptinput();
+		//console.log('loop is running');
 		gamestate.updatestate();
 		gamestate.renderstate();
-		//clearSelections();
 	};
 	this.start = function(){
 		gamespace = new gamespace();
 		gamespace.initialize();
-		this.interval = setInterval(this.run,1000/fps);
-		// finds mouse event for all of canvas
-		new mouseClickListener(gamespace.canvas,function(e){
-			mouseClickX = e.x;
-			mouseClickY = e.y;
-			mouseClickX -= gamespace.canvas.offsetLeft;
-			mouseClickY -= gamespace.canvas.offsetTop;
-			//console.log(mouseClickX+","+mouseClickY);
-			checkForSelection();
-		});
-		// order counts! make background the first entity!
-		new entity('bg','rectangle',500,500,'black',250,250,0,0,0,0,false,false,true,false);
-		new entity('test_item','circle',50,50,'blue',250,250,0,0,250,250,true,true,false,false);
-		new entity('test_item_2','circle',50,50,'purple',100,100,0,0,100,100,false,true,false,false);
+		this.interval = setInterval(this.run,1000/fps);	
 	};
 	this.stop = function(){
 		clearInterval(this.interval);
 	};
 }
+function selectedEvent(target,actiona,actionb){
+	selectedEvents.push(function(){
+		if(target.selected==true){
+			actiona();
+		} else {
+			actionb();
+		}
+	});
+}
+function emptySelectedEventQueue(){
+	//console.log('emptying event queue');
+	for(i=0;i<selectedEvents.length;i++){
+		selectedEvents[i]();
+	}
+}
+function makeOnlySelected(target){
+	for(i=0;i<entities.length;i++){
+		entities[i].selected = false;
+	}
+	entities[target].selected = true;
+}
 function moveEntities(){
 	for(i=0;i<entities.length;i++){
-		if(entities[i].selected==true){
-			if(entities[i].static==false){
-				entities[i].color='green';
-			}
-		}
+		entities[i].speedX = 3*(entities[i].targetX - entities[i].posX)/gamespace.canvas.width;
+		entities[i].posX += entities[i].speedX;
+		entities[i].speedY = 3*(entities[i].targetY - entities[i].posY)/gamespace.canvas.height;
+		entities[i].posY += entities[i].speedY;
 	}
 }
-function checkForSelection(){
-	for(i=0;i<entities.length;i++){
-		switch(entities[i].shape){
-			case 'circle':
-				var radius = entities[i].width/2;
-				var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-entities[i].posX,2)+Math.pow(mouseClickY-entities[i].posY,2));
-				if((mouseClickDistance<radius)&&(entities[i].clickable==true)){
-					entities[i].selected = true;
-					console.log(entities[i].name+" has been selected");
-				} else if((mouseClickDistance>radius)&&(entities[i].selected==true)){
-					entities[i].selected = false;
-				} else {
-					entities[i].selected = false;
-				}
-				break;
-			default:
-				
-		}
-	}
-}
+
 function drawEntities(){
 	var ctx = gamespace.context;
 	for(i=0;i<entities.length;i++){
@@ -98,7 +78,7 @@ function drawEntities(){
 		}
 	}
 }
-function entity(name,shape,height,width,color,posX,posY,speedX,speedY,targetX,targetY,clickable,collision,static,selected){
+function entity(name,shape,height,width,color,posX,posY,speedX,speedY,targetX,targetY,collision){
 	var newEntity = {
 		'name':name,
 		'shape':shape,
@@ -111,21 +91,114 @@ function entity(name,shape,height,width,color,posX,posY,speedX,speedY,targetX,ta
 		'speedY':speedY,
 		'targetX':targetX,
 		'targetY':targetY,
-		'clickable':clickable,
 		'collision':collision,
-		'static':static,
-		'selected':selected,
 	};
 	entities.push(newEntity);
 }
 function log_info(info){
 	console.log(info);
 }
-function mouseClickListener(target,action){
-	target.addEventListener('mousedown',action,false);
+function whatIsSelected(){
+	for(i=0;i<entities.length;i++){
+		var radius = Math.sqrt(Math.pow(entities[i].width/2,2)+Math.pow(entities[i].height/2,2));
+		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-entities[i].posX,2)+Math.pow(mouseClickY-entities[i].posY,2));
+		if((mouseClickDistance<radius)){
+			console.log(entities[i].name+" has been selected");
+			return i;
+		}
+	}
+	console.log('nothing selected');
+	return null;
+}
+function mouseEvent(event){
+	mouseEvents.push(event);
+}
+function mouseListener(){
+	gamespace.canvas.addEventListener('mousedown',function(e){
+		mouseClickX = e.x;
+		mouseClickY = e.y;
+		mouseClickX -= gamespace.canvas.offsetLeft;
+		mouseClickY -= gamespace.canvas.offsetTop;
+		//console.log(mouseClickX+','+mouseClickY);
+		oldSelected = selected;
+		selected = whatIsSelected();
+		for(i=0;i<mouseEvents.length;i++){
+			mouseEvents[i]();
+		}
+	},false);
 }
 function keyPressListener(action){
 
 }
 gamestate = new gamestate();
 gamestate.start();
+
+
+
+
+// this is where the game engine ends and the components that make up the game are added.
+new mouseListener();
+new entity('test_item','circle',50,50,'blue',250,250,0,0,250,250,true);
+new entity('test_item2','circle',50,50,'blue',300,300,0,0,300,300,true);
+new entity('test_item_3','circle',50,50,'purple',100,100,0,0,100,100,true);
+new mouseEvent(function(){
+	if((selected==0)&&(oldSelected!=0)){
+		entities[0].color='red';
+	}
+});
+new mouseEvent(function(){
+	if((selected!=0)&&(oldSelected==0)){
+		entities[0].color = 'blue';
+		entities[0].targetX = mouseClickX;
+		entities[0].targetY = mouseClickY;
+	}
+});
+new mouseEvent(function(){
+	if((selected==1)&&(oldSelected!=1)){
+		entities[1].color='red';
+	}
+});
+new mouseEvent(function(){
+	if((selected!=1)&&(oldSelected==1)){
+		entities[1].color = 'blue';
+		entities[1].targetX = mouseClickX;
+		entities[1].targetY = mouseClickY;
+	}
+});
+//new MouseEvent();
+/*new leftMouseClickListener(entities[1],function(){
+	makeOnlySelected(1);
+});*/	
+/*new leftMouseClickListener(entities[0],function(){
+	entities[1].targetX = mouseClickX;
+	entities[1].targetY = mouseClickY;
+});*/
+/*new selectedEvent(entities[0],function(){
+		entities[0].color='red'
+	},function(){
+		entities[0].color='blue';
+	});*/
+/*entities[1].targetX = mouseClickX;
+	entities[1].targetY = mouseClickY;*/
+/*new leftMouseClickListener(entities[0],function(){
+	makeOnlySelected(1);
+	new eventQueueItem(entities[1],function(){
+		entities[1].color='red';
+	});
+	
+});*/
+
+/*switch(target.shape){
+	case 'circle':
+		var radius = target.width/2;
+		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-target.posX,2)+Math.pow(mouseClickY-target.posY,2));
+		break;
+	default:
+		var radius = Math.sqrt(Math.pow(target.width/2)+Math.pow(target.height/2));
+		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-target.posX,2)+Math.pow(mouseClickY-target.posY,2));
+		break;
+}
+if((mouseClickDistance<radius)&&(target.clickable==true)){
+	console.log(target.name+" has been selected");
+	action();
+}*/
