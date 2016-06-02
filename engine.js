@@ -140,11 +140,12 @@ gamestate.start();
 var playableColor = 'rgba(0,110,110,1)';
 var playableHighlighted = 'rgba(0,150,150,1)';
 var cloudColor = 'rgba(130,130,130,0.5)';
+var enemyColor = 'rgba(140,0,50,1)';
 new mouseListener();
 new entity('playable1','circle',50,50,playableColor,400,400,0,0,400,400,true);
 new entity('playable2','circle',50,50,playableColor,350,350,0,0,350,350,true);
-new entity('enemy1','circle',50,50,'purple',100,100,0,0,100,100,true);
-new entity('enemy2','circle',50,50,'purple',150,150,0,0,150,150,true);
+new entity('enemy1','circle',50,50,enemyColor,100,100,0,0,100,100,true);
+new entity('enemy2','circle',50,50,enemyColor,150,150,0,0,150,150,true);
 new entity('cloud','circle',100,100,cloudColor,250,250,0,0,250,250,true);
 new entity('cloud','circle',100,100,cloudColor,200,300,0,0,200,300,true);
 new entity('cloud','circle',100,100,cloudColor,300,200,0,0,300,200,true);
@@ -170,6 +171,11 @@ new mouseEvent(function(){
 		entities[1].color = playableColor;
 		entities[1].targetX = mouseClickX;
 		entities[1].targetY = mouseClickY;
+	}
+});
+new mouseEvent(function(){
+	if(selected==4){
+		selected=null;
 	}
 });
 //new MouseEvent();
