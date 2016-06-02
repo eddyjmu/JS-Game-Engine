@@ -168,7 +168,7 @@ new mouseEvent(function(){
 });
 new mouseEvent(function(){
 	// case where selecting nullspace or another entity after selecting 'pc' entity
-	if(selected!=null){
+	if(oldSelected!=null){
 		if(entities[oldSelected].type=='pc'){
 			if((selected==null)||(entities[selected].type=='env')){
 				entities[oldSelected].color = playableColor;
@@ -179,7 +179,7 @@ new mouseEvent(function(){
 				// here be weapon fire
 			}
 		}
-	}	
+	}
 });
 /*new mouseEvent(function(){
 	// to set target location for playable to move to
