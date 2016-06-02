@@ -106,6 +106,12 @@ function mouseListener(){
 			mouseEvents[i]();
 		}
 	},false);
+	/*gamespace.canvas.addEventListener('mousemove',function(e){
+		mousePosX = e.x;
+		mousePosY = e.x;
+		mousePosX -= gamespace.canvas.offsetLeft;
+		mousePosY -= gamespace.canvas.offsetTop;
+	});*/
 }
 function keyPressListener(action){
 
@@ -131,9 +137,13 @@ new entity('cloud','env',100,100,cloudColor,200,300,0,0,200,300,true);
 new entity('cloud','env',100,100,cloudColor,300,200,0,0,300,200,true);
 function hurryUpAndWait(){
 	for(i=0;i<entities.length;i++){
-		entities[i].speedX = 3*(entities[i].targetX - entities[i].posX)/gamespace.canvas.width;
+		//if((entities[i].type=='pc')||(entities[i].type=='npc')){
+			entities[i].speedX = 2.5*(entities[i].targetX - entities[i].posX)/gamespace.canvas.width;
+			entities[i].speedY = 2.5*(entities[i].targetY - entities[i].posY)/gamespace.canvas.height;
+		//} else {
+
+		//}
 		entities[i].posX += entities[i].speedX;
-		entities[i].speedY = 3*(entities[i].targetY - entities[i].posY)/gamespace.canvas.height;
 		entities[i].posY += entities[i].speedY;
 	}
 }
@@ -175,35 +185,10 @@ new mouseEvent(function(){
 				entities[oldSelected].targetX = mouseClickX;
 				entities[oldSelected].targetY = mouseClickY;
 			} else if(entities[selected].type=='npc'){
+				// here there be weapon fire
+				new entity('cannonfire','env',10,10,'yellow',entities[oldSelected].posX,entities[oldSelected].posY,0,0,entities[selected].posX,entities[selected].posY,true);
 				selected=oldSelected;
-				// here be weapon fire
 			}
 		}
 	}
 });
-/*new mouseEvent(function(){
-	// to set target location for playable to move to
-	if(oldSelected)
-	if((selected==null)&&(oldSelected==0)){
-		entities[0].color = playableColor;
-		entities[0].targetX = mouseClickX;
-		entities[0].targetY = mouseClickY;
-	}
-});
-new mouseEvent(function(){
-	if((selected==1)&&(oldSelected!=1)){
-		entities[1].color=playableHighlighted;
-	}
-});
-new mouseEvent(function(){
-	if((selected==null)&&(oldSelected==1)){
-		entities[1].color = playableColor;
-		entities[1].targetX = mouseClickX;
-		entities[1].targetY = mouseClickY;
-	}
-});
-new mouseEvent(function(){
-	if(selected==4){
-		selected=null;
-	}
-});*/
