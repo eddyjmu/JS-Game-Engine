@@ -1,5 +1,5 @@
 var fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0, selected=null, oldSelected=null;
-var entities = []; var selectedEvents = []; var mouseEvents = [];
+var entities = []; var events = []; var mouseEvents = []; var motionBehaviors = [];
 function gamespace(){
 	this.canvas = document.getElementById('gamespace');
 	this.initialize = function(){
@@ -11,8 +11,8 @@ function gamespace(){
 }
 function gamestate(){
 	this.updatestate = function(){
-		moveEntities();
-		emptySelectedEventQueue();
+		runmotionBehavior();
+		emptyEventQueue();
 	};
 	this.renderstate = function(){
 		gamespace.context.clearRect(0,0,gamespace.canvas.width,gamespace.canvas.height);
@@ -32,36 +32,22 @@ function gamestate(){
 		clearInterval(this.interval);
 	};
 }
-function selectedEvent(target,actiona,actionb){
-	selectedEvents.push(function(){
-		if(target.selected==true){
-			actiona();
-		} else {
-			actionb();
-		}
-	});
+function event(action){
+	events.push(action);
 }
-function emptySelectedEventQueue(){
-	//console.log('emptying event queue');
-	for(i=0;i<selectedEvents.length;i++){
-		selectedEvents[i]();
+function emptyEventQueue(){
+	for(i=0;i<events.length;i++){
+		events[i]();
 	}
 }
-function makeOnlySelected(target){
-	for(i=0;i<entities.length;i++){
-		entities[i].selected = false;
-	}
-	entities[target].selected = true;
-}
-function moveEntities(){
-	for(i=0;i<entities.length;i++){
-		entities[i].speedX = 3*(entities[i].targetX - entities[i].posX)/gamespace.canvas.width;
-		entities[i].posX += entities[i].speedX;
-		entities[i].speedY = 3*(entities[i].targetY - entities[i].posY)/gamespace.canvas.height;
-		entities[i].posY += entities[i].speedY;
+function runmotionBehavior(){
+	for(i=0;i<motionBehaviors.length;i++){
+		motionBehaviors[i]();
 	}
 }
-
+function motionBehavior(behavior){
+	motionBehaviors.push(behavior);
+}
 function drawEntities(){
 	var ctx = gamespace.context;
 	for(i=0;i<entities.length;i++){
@@ -100,7 +86,7 @@ function log_info(info){
 }
 function whatIsSelected(){
 	for(i=0;i<entities.length;i++){
-		var radius = Math.sqrt(Math.pow(entities[i].width/2,2)+Math.pow(entities[i].height/2,2));
+		var radius = entities[i].width/2;
 		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-entities[i].posX,2)+Math.pow(mouseClickY-entities[i].posY,2));
 		if((mouseClickDistance<radius)){
 			console.log(entities[i].name+" has been selected");
@@ -149,6 +135,14 @@ new entity('enemy2','circle',50,50,enemyColor,150,150,0,0,150,150,true);
 new entity('cloud','circle',100,100,cloudColor,250,250,0,0,250,250,true);
 new entity('cloud','circle',100,100,cloudColor,200,300,0,0,200,300,true);
 new entity('cloud','circle',100,100,cloudColor,300,200,0,0,300,200,true);
+new motionBehavior(function(){
+	for(i=0;i<entities.length;i++){
+		entities[i].speedX = 3*(entities[i].targetX - entities[i].posX)/gamespace.canvas.width;
+		entities[i].posX += entities[i].speedX;
+		entities[i].speedY = 3*(entities[i].targetY - entities[i].posY)/gamespace.canvas.height;
+		entities[i].posY += entities[i].speedY;
+	}
+});
 new mouseEvent(function(){
 	if((selected==0)&&(oldSelected!=0)){
 		entities[0].color=playableHighlighted;
@@ -178,40 +172,3 @@ new mouseEvent(function(){
 		selected=null;
 	}
 });
-//new MouseEvent();
-/*new leftMouseClickListener(entities[1],function(){
-	makeOnlySelected(1);
-});*/	
-/*new leftMouseClickListener(entities[0],function(){
-	entities[1].targetX = mouseClickX;
-	entities[1].targetY = mouseClickY;
-});*/
-/*new selectedEvent(entities[0],function(){
-		entities[0].color='red'
-	},function(){
-		entities[0].color='blue';
-	});*/
-/*entities[1].targetX = mouseClickX;
-	entities[1].targetY = mouseClickY;*/
-/*new leftMouseClickListener(entities[0],function(){
-	makeOnlySelected(1);
-	new eventQueueItem(entities[1],function(){
-		entities[1].color='red';
-	});
-	
-});*/
-
-/*switch(target.shape){
-	case 'circle':
-		var radius = target.width/2;
-		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-target.posX,2)+Math.pow(mouseClickY-target.posY,2));
-		break;
-	default:
-		var radius = Math.sqrt(Math.pow(target.width/2)+Math.pow(target.height/2));
-		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-target.posX,2)+Math.pow(mouseClickY-target.posY,2));
-		break;
-}
-if((mouseClickDistance<radius)&&(target.clickable==true)){
-	console.log(target.name+" has been selected");
-	action();
-}*/
