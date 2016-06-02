@@ -10,17 +10,21 @@ function gamespace(){
 	};
 }
 function gamestate(){
+	this.clearstate = function(){
+		gamespace.context.clearRect(0,0,gamespace.canvas.width,gamespace.canvas.height);
+		clearStatuses();
+	}
 	this.updatestate = function(){
 		checkCollisions();
-		runmotionBehavior();
+		runMotionBehavior();
 		emptyEventQueue();
 	};
-	this.renderstate = function(){
-		gamespace.context.clearRect(0,0,gamespace.canvas.width,gamespace.canvas.height);
+	this.renderstate = function(){		
 		drawEntities();
 	};
 	this.run = function(){
 		//console.log('loop is running');
+		gamestate.clearstate();
 		gamestate.updatestate();
 		gamestate.renderstate();
 	};
@@ -41,7 +45,7 @@ function emptyEventQueue(){
 		events[i]();
 	}
 }
-function runmotionBehavior(){
+function runMotionBehavior(){
 	for(i=0;i<motionBehaviors.length;i++){
 		motionBehaviors[i]();
 	}
@@ -59,7 +63,7 @@ function drawEntities(){
 		ctx.fill();	
 	}
 }
-function entity(name,type,height,width,color,posX,posY,speedX,speedY,targetX,targetY){
+function entity(name,type,height,width,color,posX,posY,speedX,speedY,targetX,targetY,status){
 	var newEntity = {
 		'name':name,
 		'type':type,
@@ -72,6 +76,7 @@ function entity(name,type,height,width,color,posX,posY,speedX,speedY,targetX,tar
 		'speedY':speedY,
 		'targetX':targetX,
 		'targetY':targetY,
+		'status':status
 	};
 	entities.push(newEntity);
 }
@@ -154,6 +159,11 @@ function checkCollisions(){
 function collisionEvent(event){
 	collisionEvents.push(event);
 }
+function clearStatuses(){
+	for(i=0;i<entities.length;i++){
+		entities[i].status=null;
+	}
+}
 gamestate = new gamestate();
 gamestate.start();
 
@@ -167,13 +177,13 @@ var playableDark = 'rgba(0,70,70,1)';
 var cloudColor = 'rgba(130,130,130,0.5)';
 var enemyColor = 'rgba(140,0,50,1)';
 new mouseListener();
-new entity('playable1','pc',50,50,playableColor,400,400,0,0,400,400);
-new entity('playable2','pc',50,50,playableColor,350,350,0,0,350,350);
-new entity('enemy1','npc',50,50,enemyColor,100,100,0,0,100,100);
-new entity('enemy2','npc',50,50,enemyColor,150,150,0,0,150,150);
-new entity('cloud','env',100,100,cloudColor,250,250,0,0,250,250);
-new entity('cloud','env',100,100,cloudColor,200,300,0,0,200,300);
-new entity('cloud','env',100,100,cloudColor,300,200,0,0,300,200);
+new entity('playable1','pc',50,50,playableColor,400,400,0,0,400,400,null);
+new entity('playable2','pc',50,50,playableColor,350,350,0,0,350,350,null);
+new entity('enemy1','npc',50,50,enemyColor,100,100,0,0,100,100,null);
+new entity('enemy2','npc',50,50,enemyColor,150,150,0,0,150,150,null);
+new entity('cloud','env',100,100,cloudColor,250,250,0,0,250,250,null);
+new entity('cloud','env',100,100,cloudColor,200,300,0,0,200,300,null);
+new entity('cloud','env',100,100,cloudColor,300,200,0,0,300,200,null);
 new motionBehavior(function(){
 	for(i=0;i<entities.length;i++){
 		if((entities[i].type=='pc')||(entities[i].type=='npc')){
@@ -190,6 +200,14 @@ new collisionEvent(function(entity1,entity2){
 		console.log('boom');
 	}
 });
+new collisionEvent(function(entity1,entity2){
+	if((entity1.type=='pc')&&(entity2.type=='env')){
+		entity1.status=='cover';
+	}
+});
+/*new event(function(){
+	if()
+});*/
 new mouseEvent(function(){
 	// case where selecting 'pc' entity for the first time
 	if(selected!=null){
