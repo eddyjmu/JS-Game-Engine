@@ -186,7 +186,7 @@ new mouseEvent(function(){
 				entities[oldSelected].targetY = mouseClickY;
 			} else if(entities[selected].type=='npc'){
 				// here there be weapon fire
-				new entity('cannonfire','env',10,10,'yellow',entities[oldSelected].posX,entities[oldSelected].posY,0,0,entities[selected].posX,entities[selected].posY,true);
+				new entity('cannonfire','mun',10,10,'yellow',entities[oldSelected].posX,entities[oldSelected].posY,0,0,entities[selected].posX,entities[selected].posY,true);
 				selected=oldSelected;
 			}
 		}
