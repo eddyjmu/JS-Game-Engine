@@ -52,22 +52,16 @@ function drawEntities(){
 	var ctx = gamespace.context;
 	for(i=0;i<entities.length;i++){
 		ctx.fillStyle = entities[i].color;
-		switch(entities[i].shape){
-			case 'circle':
-				var radius = entities[i].width/2;
-				ctx.beginPath();
-				ctx.arc(entities[i].posX,entities[i].posY,radius,0,2*Math.PI);
-				ctx.fill();
-				break;
-			default:
-				ctx.fillRect(entities[i].posX-(entities[i].width/2),entities[i].posY-(entities[i].height/2),entities[i].width,entities[i].height);
-		}
+		var radius = entities[i].width/2;
+		ctx.beginPath();
+		ctx.arc(entities[i].posX,entities[i].posY,radius,0,2*Math.PI);
+		ctx.fill();	
 	}
 }
-function entity(name,shape,height,width,color,posX,posY,speedX,speedY,targetX,targetY,collision){
+function entity(name,type,height,width,color,posX,posY,speedX,speedY,targetX,targetY,collision){
 	var newEntity = {
 		'name':name,
-		'shape':shape,
+		'type':type,
 		'height':height,
 		'width':width,
 		'color':color,
@@ -128,28 +122,69 @@ var playableHighlighted = 'rgba(0,150,150,1)';
 var cloudColor = 'rgba(130,130,130,0.5)';
 var enemyColor = 'rgba(140,0,50,1)';
 new mouseListener();
-new entity('playable1','circle',50,50,playableColor,400,400,0,0,400,400,true);
-new entity('playable2','circle',50,50,playableColor,350,350,0,0,350,350,true);
-new entity('enemy1','circle',50,50,enemyColor,100,100,0,0,100,100,true);
-new entity('enemy2','circle',50,50,enemyColor,150,150,0,0,150,150,true);
-new entity('cloud','circle',100,100,cloudColor,250,250,0,0,250,250,true);
-new entity('cloud','circle',100,100,cloudColor,200,300,0,0,200,300,true);
-new entity('cloud','circle',100,100,cloudColor,300,200,0,0,300,200,true);
-new motionBehavior(function(){
+new entity('playable1','pc',50,50,playableColor,400,400,0,0,400,400,true);
+new entity('playable2','pc',50,50,playableColor,350,350,0,0,350,350,true);
+new entity('enemy1','npc',50,50,enemyColor,100,100,0,0,100,100,true);
+new entity('enemy2','npc',50,50,enemyColor,150,150,0,0,150,150,true);
+new entity('cloud','env',100,100,cloudColor,250,250,0,0,250,250,true);
+new entity('cloud','env',100,100,cloudColor,200,300,0,0,200,300,true);
+new entity('cloud','env',100,100,cloudColor,300,200,0,0,300,200,true);
+function hurryUpAndWait(){
 	for(i=0;i<entities.length;i++){
 		entities[i].speedX = 3*(entities[i].targetX - entities[i].posX)/gamespace.canvas.width;
 		entities[i].posX += entities[i].speedX;
 		entities[i].speedY = 3*(entities[i].targetY - entities[i].posY)/gamespace.canvas.height;
 		entities[i].posY += entities[i].speedY;
 	}
+}
+/*function slowAndSteady(){
+	roomForError = 2;
+	for(i=0;i<entities.length;i++){
+
+		if((entities[i].posX-entities[i].targetX)>roomForError){
+			entities[i].speedX = 0;
+		} else {
+			entities[i].speedX = 0;
+		}
+		if((entities[i].posY-entities[i].targetY)>roomForError){
+			entities[i].speedY = 0;
+		} else {
+			entities[i].speedY = 0;
+		}
+		entities[i].posX += entities[i].speedX;
+		entities[i].posY += entities[i].speedY;
+	}
+}*/
+new motionBehavior(function(){
+	hurryUpAndWait();
 });
 new mouseEvent(function(){
-	if((selected==0)&&(oldSelected!=0)){
-		entities[0].color=playableHighlighted;
+	// case where selecting 'pc' entity for the first time
+	if(selected!=null){
+		if((selected!=oldSelected)&&(entities[selected].type=='pc')){		
+			entities[selected].color=playableHighlighted;
+		}
 	}
 });
 new mouseEvent(function(){
-	if((selected!=0)&&(oldSelected==0)){
+	// case where selecting nullspace or another entity after selecting 'pc' entity
+	if(selected!=null){
+		if(entities[oldSelected].type=='pc'){
+			if((selected==null)||(entities[selected].type=='env')){
+				entities[oldSelected].color = playableColor;
+				entities[oldSelected].targetX = mouseClickX;
+				entities[oldSelected].targetY = mouseClickY;
+			} else if(entities[selected].type=='npc'){
+				selected=oldSelected;
+				// here be weapon fire
+			}
+		}
+	}	
+});
+/*new mouseEvent(function(){
+	// to set target location for playable to move to
+	if(oldSelected)
+	if((selected==null)&&(oldSelected==0)){
 		entities[0].color = playableColor;
 		entities[0].targetX = mouseClickX;
 		entities[0].targetY = mouseClickY;
@@ -161,7 +196,7 @@ new mouseEvent(function(){
 	}
 });
 new mouseEvent(function(){
-	if((selected!=1)&&(oldSelected==1)){
+	if((selected==null)&&(oldSelected==1)){
 		entities[1].color = playableColor;
 		entities[1].targetX = mouseClickX;
 		entities[1].targetY = mouseClickY;
@@ -171,4 +206,4 @@ new mouseEvent(function(){
 	if(selected==4){
 		selected=null;
 	}
-});
+});*/
