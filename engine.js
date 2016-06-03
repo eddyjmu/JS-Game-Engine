@@ -249,13 +249,16 @@ var playableHighlighted = 'rgba(0,150,150,1)';
 var playableDark = 'rgba(0,70,70,1)';
 var cloudColor = 'rgba(130,130,130,0.5)';
 var enemyColor = 'rgba(140,0,50,1)';
+var deadColor = 'rgba(64,64,64,1)';
 new mouseListener();
 // playables
-new entity('playable1','pc',50,50,playableColor,400,400,0,0,400,400,null);
-new entity('playable2','pc',50,50,playableColor,350,350,0,0,350,350,null);
+new entity('playable1','pc',50,50,playableColor,350,350,0,0,350,350,null);
+new entity('playable2','pc',50,50,playableColor,350,425,0,0,350,425,null);
+new entity('playable3','pc',50,50,playableColor,425,350,0,0,425,350,null);
 // enemies
-new entity('enemy1','npc',50,50,enemyColor,100,100,0,0,100,100,null);
-new entity('enemy2','npc',50,50,enemyColor,150,150,0,0,150,150,null);
+new entity('enemy1','npc',50,50,enemyColor,150,150,0,0,150,150,null);
+new entity('enemy2','npc',50,50,enemyColor,150,75,0,0,150,75,null);
+new entity('enemy3','npc',50,50,enemyColor,75,150,0,0,75,150,null);
 // barriers
 new entity('cloud','env',100,100,cloudColor,250,250,0,0,250,250,null);
 new entity('cloud','env',100,100,cloudColor,200,300,0,0,200,300,null);
@@ -288,7 +291,12 @@ new entity('cloud','env',100,100,cloudColor,400,500,0,0,400,500,null);
 new motionBehavior(function(){
 	for(i=0;i<entities.length;i++){
 		if((entities[i].type=='pc')||(entities[i].type=='npc')){
-			flightMode2(i);
+			if(entities[i].status!='dead'){
+				flightMode2(i);
+			} else {
+				entities[i].speedX = 0;
+				entities[i].speedY = 0;
+			}
 		} else if((entities[i].type=='mun1')||(entities[i].type=='mun2')){
 			flightMode3(i);
 		}
@@ -312,6 +320,8 @@ new collisionEvent(function(entity1,entity2){
 	// npc destruction event
 	if((entities[entity1].type=='npc')&&(entities[entity2].type=='mun1')){
 		removeEntity(entity2);
+		//entities[entity1].color=deadColor;
+		//entities[entity1].status='dead';
 		removeEntity(entity1);
 	}
 });
