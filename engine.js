@@ -1,5 +1,5 @@
-var fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0, selected=null, oldSelected=null;
-var entities = []; var events = []; var collisionEvents = []; var mouseEvents = []; var motionBehaviors = [];
+var loopNumber=0, fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0, selected=null, oldSelected=null;
+var entities = []; var events = []; var collisionEvents = []; var mouseEvents = []; var motionBehaviors = []; var collisionBoxes = [];
 function gamespace(){
 	this.canvas = document.getElementById('gamespace');
 	this.initialize = function(){
@@ -18,6 +18,7 @@ function gamestate(){
 		checkCollisions();
 		runMotionBehavior();
 		emptyEventQueue();
+		configureLoopNumber();
 	};
 	this.renderstate = function(){		
 		drawEntities();
@@ -31,11 +32,19 @@ function gamestate(){
 	this.start = function(){
 		gamespace = new gamespace();
 		gamespace.initialize();
-		this.interval = setInterval(this.run,1000/fps);	
+		this.interval = setInterval(this.run,1000/fps);
 	};
 	this.stop = function(){
 		clearInterval(this.interval);
 	};
+}
+function configureLoopNumber(){
+		if(loopNumber==1000){
+			loopNumber=1;
+		} else {
+			loopNumber++;
+		}
+		//console.log(loopNumber);
 }
 function event(action){
 	events.push(action);
@@ -89,7 +98,7 @@ function whatIsSelected(){
 		var radius = entities[i].width/2;
 		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-entities[i].posX,2)+Math.pow(mouseClickY-entities[i].posY,2));
 		if((mouseClickDistance<radius)){
-			console.log(entities[i].name+" has been selected");
+			console.log(entities[i].name+" '"+entities[i].type+"' "+"has been selected");
 			return i;
 		}
 	}
@@ -180,25 +189,32 @@ function flightMode3(entity){
 		}
 	}
 }*/
+function removeEntity(entity){
+	entities.splice(entity,1);
+}
 function overlap(entity1,entity2){
-	//console.log('working');
-	if(entity1.type==entity2.type){
-		return false;
-	}
-	radius1 = entity1.width/2;
-	radius2 = entity2.width/2;
-	distance = Math.sqrt(Math.pow(entity1.posX-entity2.posX,2)+Math.pow(entity1.posY-entity2.posY,2));
-	if(distance<=radius1+radius2){
-		return true;
-	} else {
-		return false;
+	try {
+		if(entities[entity1].type==entities[entity2].type){
+			return false;
+		}
+		radius1 = entities[entity1].width/2;
+		radius2 = entities[entity2].width/2;
+		distance = findDistance(entity1,entity2);
+		if(distance<=(radius1+radius2)){
+			//console.log(entities[entity1].name+" is overlapping "+entities[entity2].name);
+			return true;
+		} else {
+			return false;
+		}
+	} catch(e) {
+		//console.log(e.message);
 	}
 }
 function checkCollisions(){
-	for(i=0;i<entities.length;i++){
-		for(j=0;j<entities.length;j++){
-			if(overlap(entities[i],entities[j])){
-				for(n=0;n<collisionEvents.length;n++){
+	for(n=0;n<collisionEvents.length;n++){
+		for(i=0;i<entities.length;i++){
+			for(j=0;j<entities.length;j++){
+				if(overlap(i,j)){
 					collisionEvents[n](i,j);
 				}
 			}
@@ -211,6 +227,14 @@ function collisionEvent(event){
 function clearStatuses(){
 	for(i=0;i<entities.length;i++){
 		entities[i].status=null;
+	}
+}
+function findDistance(i,j){
+	return Math.sqrt(Math.pow(entities[i].posX-entities[j].posX,2)+Math.pow(entities[i].posY-entities[j].posY,2));
+}
+function timedEvent(timeframe,event){
+	if(loopNumber%(timeframe)==0){
+		event();
 	}
 }
 gamestate = new gamestate();
@@ -226,18 +250,46 @@ var playableDark = 'rgba(0,70,70,1)';
 var cloudColor = 'rgba(130,130,130,0.5)';
 var enemyColor = 'rgba(140,0,50,1)';
 new mouseListener();
+// playables
 new entity('playable1','pc',50,50,playableColor,400,400,0,0,400,400,null);
 new entity('playable2','pc',50,50,playableColor,350,350,0,0,350,350,null);
+// enemies
 new entity('enemy1','npc',50,50,enemyColor,100,100,0,0,100,100,null);
 new entity('enemy2','npc',50,50,enemyColor,150,150,0,0,150,150,null);
+// barriers
 new entity('cloud','env',100,100,cloudColor,250,250,0,0,250,250,null);
 new entity('cloud','env',100,100,cloudColor,200,300,0,0,200,300,null);
 new entity('cloud','env',100,100,cloudColor,300,200,0,0,300,200,null);
+// walls
+// left wall
+new entity('cloud','env',100,100,cloudColor,0,0,0,0,0,0,null);
+new entity('cloud','env',100,100,cloudColor,0,100,0,0,0,100,null);
+new entity('cloud','env',100,100,cloudColor,0,200,0,0,0,200,null);
+new entity('cloud','env',100,100,cloudColor,0,300,0,0,0,300,null);
+new entity('cloud','env',100,100,cloudColor,0,400,0,0,0,400,null);
+// top wall
+new entity('cloud','env',100,100,cloudColor,100,0,0,0,100,0,null);
+new entity('cloud','env',100,100,cloudColor,200,0,0,0,200,0,null);
+new entity('cloud','env',100,100,cloudColor,300,0,0,0,300,0,null);
+new entity('cloud','env',100,100,cloudColor,400,0,0,0,400,0,null);
+new entity('cloud','env',100,100,cloudColor,500,0,0,0,500,0,null);
+// bottom wall
+new entity('cloud','env',100,100,cloudColor,500,100,0,0,500,100,null);
+new entity('cloud','env',100,100,cloudColor,500,200,0,0,500,200,null);
+new entity('cloud','env',100,100,cloudColor,500,300,0,0,500,300,null);
+new entity('cloud','env',100,100,cloudColor,500,400,0,0,500,400,null);
+new entity('cloud','env',100,100,cloudColor,500,500,0,0,500,500,null);
+// right wall
+new entity('cloud','env',100,100,cloudColor,0,500,0,0,0,500,null);
+new entity('cloud','env',100,100,cloudColor,100,500,0,0,100,500,null);
+new entity('cloud','env',100,100,cloudColor,200,500,0,0,200,500,null);
+new entity('cloud','env',100,100,cloudColor,300,500,0,0,300,500,null);
+new entity('cloud','env',100,100,cloudColor,400,500,0,0,400,500,null);
 new motionBehavior(function(){
 	for(i=0;i<entities.length;i++){
 		if((entities[i].type=='pc')||(entities[i].type=='npc')){
 			flightMode2(i);
-		} else if(entities[i].type=='mun') {
+		} else if((entities[i].type=='mun1')||(entities[i].type=='mun2')){
 			flightMode3(i);
 		}
 		entities[i].posX += entities[i].speedX;
@@ -245,19 +297,87 @@ new motionBehavior(function(){
 	}
 });
 new collisionEvent(function(entity1,entity2){
-	if((entities[entity1].type=='npc')&&(entities[entity2].type=='mun')){
-		entities.splice(entity2,1);
-		entities.splice(entity1,1);
+	// munitions death on environment
+	if((entities[entity1].type=='mun1')&&(entities[entity2].type=='env')){
+		removeEntity(entity1);
+	}
+});
+new collisionEvent(function(entity1,entity2){
+	// munitions death on environment
+	if((entities[entity1].type=='mun2')&&(entities[entity2].type=='env')){
+		removeEntity(entity1);
+	}
+});
+new collisionEvent(function(entity1,entity2){
+	// npc destruction event
+	if((entities[entity1].type=='npc')&&(entities[entity2].type=='mun1')){
+		removeEntity(entity2);
+		removeEntity(entity1);
+	}
+});
+new collisionEvent(function(entity1,entity2){
+	// pc destruction event
+	if((entities[entity1].type=='pc')&&(entities[entity2].type=='mun2')){
+		removeEntity(entity2);
+		removeEntity(entity1);
 	}
 });
 new collisionEvent(function(entity1,entity2){
 	if((entities[entity1].type=='pc')&&(entities[entity2].type=='env')){
-		entity1.status=='cover';
+		entities[entity1].status='cover';
 	}
 });
-/*new event(function(){
-	if()
-});*/
+new collisionEvent(function(entity1,entity2){
+	if((entities[entity1].type=='npc')&&(entities[entity2].type=='env')){
+		entities[entity1].status='cover';
+	}
+});
+new event(function(){
+	// AI motion decision-making algorithms
+	var enemies = 0;
+	var playables = 0;
+	var fireDistance = 200;
+	var timedDifference = 50;
+	for(i=0;i<entities.length;i++){
+		if(entities[i].type=='npc'){
+			if(entities[i].status=='cover'){
+				entities[i].color='rgba(0,0,0,0)';
+			} else {
+				entities[i].color=enemyColor;
+			}
+			enemies++;
+			timedEvent(25,function(){
+				for(j=0;j<entities.length;j++){
+					distance = findDistance(i,j);
+					if(entities[j].type=='pc'){
+						if(entities[j].status!='cover'){
+							if(entities[i].status!='cover'){
+								if(distance<=fireDistance){
+									new entity('cannonfire','mun2',10,10,'yellow',entities[i].posX,entities[i].posY,0,0,entities[j].posX,entities[j].posY);
+								}
+							}							
+						}
+					}
+				}
+			});
+			timedEvent(500,function(){
+				entities[i].targetX = Math.floor((Math.random()*500)+1);				
+				entities[i].targetY = Math.floor((Math.random()*500)+1);
+			});
+		}		
+		if(entities[i].type=='pc'){
+			playables++;
+		}
+	}	
+	if(enemies==0){
+		gamestate.stop();
+		alert('victory!');
+	}
+	if(playables==0){
+		gamestate.stop();
+		alert('loss!');
+	}
+});
 new mouseEvent(function(){
 	// case where selecting 'pc' entity for the first time
 	if(selected!=null){
@@ -271,16 +391,16 @@ new mouseEvent(function(){
 	if(oldSelected!=null){
 		if(entities[oldSelected].type=='pc'){
 			if(selected==null){
-				// case where selecting nullspace
-				entities[oldSelected].color = playableColor;
+				// case where selecting nullspace or collisionboxes
 				entities[oldSelected].targetX = mouseClickX;
 				entities[oldSelected].targetY = mouseClickY;
+				selected=oldSelected;
 			} else {
 				if(entities[selected].type=='env'){
 					// case where selecting 'env'
-					entities[oldSelected].color = playableColor;
 					entities[oldSelected].targetX = mouseClickX;
 					entities[oldSelected].targetY = mouseClickY;
+					selected=oldSelected;
 				} else if(entities[selected].type=='pc'){
 					// case where selecting another 'pc'
 					if(selected!=oldSelected){
@@ -288,8 +408,7 @@ new mouseEvent(function(){
 					}
 				} else if(entities[selected].type=='npc'){
 					// case where selecting 'npc'
-					new entity('cannonfire','mun',10,10,'yellow',entities[oldSelected].posX,entities[oldSelected].posY,0,0,entities[selected].posX,entities[selected].posY);
-					console.log(entities.length-1);
+					new entity('cannonfire','mun1',10,10,'yellow',entities[oldSelected].posX,entities[oldSelected].posY,0,0,entities[selected].posX,entities[selected].posY);
 					selected=oldSelected;
 				}
 			}
