@@ -54,6 +54,7 @@ function motionBehavior(behavior){
 	motionBehaviors.push(behavior);
 }
 function drawEntities(){
+	// set up entities with status colors and then check for them here.
 	var ctx = gamespace.context;
 	for(i=0;i<entities.length;i++){
 		ctx.fillStyle = entities[i].color;
@@ -122,15 +123,63 @@ function keyPressListener(action){
 
 }
 function flightMode1(entity){
-	entity.speedX = 2.5*(entity.targetX - entity.posX)/gamespace.canvas.width;
-	entity.speedY = 2.5*(entity.targetY - entity.posY)/gamespace.canvas.width;
+	// instantly at speed, slow to stop
+	entities[entity].speedX = 2.5*(entities[entity].targetX - entities[entity].posX)/gamespace.canvas.width;
+	entities[entity].speedY = 2.5*(entities[entity].targetY - entities[entity].posY)/gamespace.canvas.width;
 }
 function flightMode2(entity){
-	diffX = entity.targetX - entity.posX;
-	diffY = entity.targetY - entity.posY;
-	entity.speedX = -Math.cos(Math.atan(diffY/diffX));
-	entity.speedY = -Math.sin(Math.atan(diffY/diffX));
+	// instantly at speed, stops on a dime
+	diffX = entities[entity].targetX - entities[entity].posX;
+	diffY = entities[entity].targetY - entities[entity].posY;
+	if((Math.abs(diffX)<2)&&(Math.abs(diffY)<2)){
+		entities[entity].speedX = 0;
+		entities[entity].speedY = 0;
+	} else {
+		if(diffX>0){
+			entities[entity].speedX = Math.cos(Math.atan(diffY/diffX));
+			entities[entity].speedY = Math.sin(Math.atan(diffY/diffX));
+		} else {
+			entities[entity].speedX = -Math.cos(Math.atan(diffY/diffX));
+			entities[entity].speedY = -Math.sin(Math.atan(diffY/diffX));
+		}
+	}
 }
+function flightMode3(entity){
+	// instantly at speed, no stop
+	diffX = entities[entity].targetX - entities[entity].posX;
+	diffY = entities[entity].targetY - entities[entity].posY;
+	if((Math.abs(diffX)<2)&&(Math.abs(diffY)<2)){
+		entities[entity].speedX = 0;
+		entities[entity].speedY = 0;
+	} else {
+		if(diffX>0){
+			entities[entity].speedX = Math.cos(Math.atan(diffY/diffX));
+			entities[entity].speedY = Math.sin(Math.atan(diffY/diffX));
+		} else {
+			entities[entity].speedX = -Math.cos(Math.atan(diffY/diffX));
+			entities[entity].speedY = -Math.sin(Math.atan(diffY/diffX));
+		}
+	}
+	entities[entity].targetX += diffX;
+	entities[entity].targetY += diffY;
+}
+/*function flightMode4(maxSpeed,entity){
+	// accelerate to speed, slow to stop
+	diffX = entities[entity].targetX - entities[entity].posX;
+	diffY = entities[entity].targetY - entities[entity].posY;
+	if((Math.abs(diffX)<2)&&(Math.abs(diffY)<2)){
+		entities[entity].speedX = 0;
+		entities[entity].speedY = 0;
+	} else {
+		if(diffX>0){
+			entities[entity].speedX = Math.cos(Math.atan(diffY/diffX));
+			entities[entity].speedY = Math.sin(Math.atan(diffY/diffX));
+		} else {
+			entities[entity].speedX = -Math.cos(Math.atan(diffY/diffX));
+			entities[entity].speedY = -Math.sin(Math.atan(diffY/diffX));
+		}
+	}
+}*/
 function overlap(entity1,entity2){
 	//console.log('working');
 	if(entity1.type==entity2.type){
@@ -150,7 +199,7 @@ function checkCollisions(){
 		for(j=0;j<entities.length;j++){
 			if(overlap(entities[i],entities[j])){
 				for(n=0;n<collisionEvents.length;n++){
-					collisionEvents[n](entities[i],entities[j]);
+					collisionEvents[n](i,j);
 				}
 			}
 		}
@@ -187,21 +236,22 @@ new entity('cloud','env',100,100,cloudColor,300,200,0,0,300,200,null);
 new motionBehavior(function(){
 	for(i=0;i<entities.length;i++){
 		if((entities[i].type=='pc')||(entities[i].type=='npc')){
-			flightMode1(entities[i]);
+			flightMode2(i);
 		} else if(entities[i].type=='mun') {
-			flightMode2(entities[i]);
+			flightMode3(i);
 		}
 		entities[i].posX += entities[i].speedX;
 		entities[i].posY += entities[i].speedY;
 	}
 });
 new collisionEvent(function(entity1,entity2){
-	if((entity1.type=='npc')&&(entity2.type=='mun')){
-		console.log('boom');
+	if((entities[entity1].type=='npc')&&(entities[entity2].type=='mun')){
+		entities.splice(entity2,1);
+		entities.splice(entity1,1);
 	}
 });
 new collisionEvent(function(entity1,entity2){
-	if((entity1.type=='pc')&&(entity2.type=='env')){
+	if((entities[entity1].type=='pc')&&(entities[entity2].type=='env')){
 		entity1.status=='cover';
 	}
 });
@@ -239,6 +289,7 @@ new mouseEvent(function(){
 				} else if(entities[selected].type=='npc'){
 					// case where selecting 'npc'
 					new entity('cannonfire','mun',10,10,'yellow',entities[oldSelected].posX,entities[oldSelected].posY,0,0,entities[selected].posX,entities[selected].posY);
+					console.log(entities.length-1);
 					selected=oldSelected;
 				}
 			}
