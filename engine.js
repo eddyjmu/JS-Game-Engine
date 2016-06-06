@@ -24,7 +24,7 @@ function gamestate(){
 		drawEntities();
 	};
 	this.run = function(){
-		console.log('loop is running');
+		//console.log('loop is running');
 		gamestate.clearstate();
 		gamestate.updatestate();
 		gamestate.renderstate();
