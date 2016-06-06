@@ -1,5 +1,5 @@
-var loopNumber=0, fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0, selected=null, oldSelected=null;
-var entities = []; var events = []; var collisionEvents = []; var mouseEvents = []; var motionBehaviors = []; var collisionBoxes = [];
+var loopNumber=0, fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0;
+var entities = []; var events = []; var collisionEvents = []; var mouseEvents = []; var motionBehaviors = []; var selectedEntities = [];
 function gamespace(){
 	this.canvas = document.getElementById('gamespace');
 	this.initialize = function(){
@@ -66,27 +66,22 @@ function drawEntities(){
 	// set up entities with status colors and then check for them here.
 	var ctx = gamespace.context;
 	for(i=0;i<entities.length;i++){
-		ctx.fillStyle = entities[i].color;
-		var radius = entities[i].width/2;
-		ctx.beginPath();
-		ctx.arc(entities[i].posX,entities[i].posY,radius,0,2*Math.PI);
-		ctx.fill();	
+		entity = entities[i];
+		ctx.drawImage(entity.image,entity.positions.x-(entity.dimensions.x/2), entity.positions.y-(entity.dimensions.y/2), entity.dimensions.x, entity.dimensions.y);
 	}
 }
-function entity(name,type,height,width,color,posX,posY,speedX,speedY,targetX,targetY,status){
+function entity(name,type,imagesrc,mass,dimensionsArray,positionArray,speedArray,statusArray){
+	image = new Image();
+	image.src = imagesrc;
 	var newEntity = {
 		'name':name,
 		'type':type,
-		'height':height,
-		'width':width,
-		'color':color,
-		'posX':posX,
-		'posY':posY,
-		'speedX':speedX,
-		'speedY':speedY,
-		'targetX':targetX,
-		'targetY':targetY,
-		'status':status
+		'image':image,
+		'mass':mass,
+		'dimensions':dimensionsArray,
+		'positions':positionArray,
+		'speeds':speedArray,
+		'statuses':statusArray,
 	};
 	entities.push(newEntity);
 }
@@ -95,10 +90,11 @@ function log_info(info){
 }
 function whatIsSelected(){
 	for(i=0;i<entities.length;i++){
-		var radius = entities[i].width/2;
-		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-entities[i].posX,2)+Math.pow(mouseClickY-entities[i].posY,2));
+		entity = entities[i];
+		var radius = entity.dimensions.x/2;
+		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-entity.positions.x,2)+Math.pow(mouseClickY-entity.positions.y,2));
 		if((mouseClickDistance<radius)){
-			console.log(entities[i].name+" '"+entities[i].type+"' "+"has been selected");
+			console.log(entity.name+" '"+entity.type+"' "+"has been selected");
 			return i;
 		}
 	}
@@ -114,11 +110,8 @@ function mouseListener(){
 		mouseClickY = e.y;
 		mouseClickX -= gamespace.canvas.offsetLeft;
 		mouseClickY -= gamespace.canvas.offsetTop;
-		//console.log(mouseClickX+','+mouseClickY);
-		oldSelected = selected;
-		selected = whatIsSelected();
 		for(i=0;i<mouseEvents.length;i++){
-			mouseEvents[i]();
+			mouseEvents[i](whatIsSelected());
 		}
 	},false);
 	/*gamespace.canvas.addEventListener('mousemove',function(e){
@@ -128,10 +121,10 @@ function mouseListener(){
 		mousePosY -= gamespace.canvas.offsetTop;
 	});*/
 }
-function keyPressListener(action){
+/*function keyPressListener(action){
 
-}
-function flightMode1(entity){
+}*/
+/*function flightMode1(entity){
 	// instantly at speed, slow to stop
 	entities[entity].speedX = 2.5*(entities[entity].targetX - entities[entity].posX)/gamespace.canvas.width;
 	entities[entity].speedY = 2.5*(entities[entity].targetY - entities[entity].posY)/gamespace.canvas.width;
@@ -189,19 +182,105 @@ function flightMode3(entity){
 		}
 	}
 }*/
+function Bounce(entity1,entity2,restitution){
+	xDistance = entities[entity2].positions.x - entities[entity1].positions.x;
+	yDistance = entities[entity2].positions.y - entities[entity1].positions.y;
+	angle = Math.tan(xDistance/yDistance);
+	//console.log(angle);
+	totalSpeedX = entities[entity1].speeds.x + entities[entity2].speeds.x;
+	totalSpeedY = entities[entity1].speeds.y + entities[entity2].speeds.y;
+	totalMass = entities[entity1].mass + entities[entity2].mass;
+	entities[entity1].speeds.x = entities[entity1].speeds.x - (entities[entity1].mass/totalMass)*totalSpeedX;
+	entities[entity1].speeds.y = entities[entity1].speeds.y - (entities[entity1].mass/totalMass)*totalSpeedY;
+	entities[entity2].speeds.x = entities[entity2].speeds.x + (entities[entity2].mass/totalMass)*totalSpeedX;
+	entities[entity2].speeds.y = entities[entity2].speeds.y + (entities[entity2].mass/totalMass)*totalSpeedY;
+	/*if(xDistance>0){
+
+	}*/
+	//entities[entity1].speeds.x = Math.cos(Math.atan(angle)) * entities[entity1].speeds.x;
+	//entities[entity1].speeds.y = Math.sin(Math.atan(angle)) * entities[entity1].speeds.y;
+	//entities[entity2].speeds.x = -Math.cos(Math.atan(angle)) * entities[entity2].speeds.x;
+	//entities[entity2].speeds.y = -Math.sin(Math.atan(angle)) * entities[entity2].speeds.y;
+	//console.log("1: "+entities[entity1].speeds.x+","+entities[entity1].speeds.y+"; 2: "+entities[entity2].speeds.x+","+entities[entity2].speeds.y);
+	
+
+
+
+	//gamestate.stop();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*entitiesXDistance = entities[entity2].posX-entities[entity1].posX;
+	entitiesYDistance = entities[entity2].posY-entities[entity1].posY;
+	angle = Math.tan(entitiesXDistance/entitiesYDistance);
+	targetDistanceFromPos = Math.sqrt(Math.pow(entities[entity1].targetX-entities[entity1].posX,2)+Math.pow(entities[entity1].targetY-entities[entity1].posY,2));*/
+	/*if(entities[entity1].posX>entities[entity2].posX){
+		if(entities[entity1].posY>entities[entity2].posY){
+			if(entities[entity1].targetX>entities[entity2].posX){
+				entities[entity1].targetX = -targetDistanceFromPos*Math.sin(-angle)-entities[entity1].posX;
+				entities[entity1].targetY = targetDistanceFromPos*Math.cos(-angle)+entities[entity1].posY;
+			} else {
+				entities[entity1].targetX = targetDistanceFromPos*Math.sin(angle)+entities[entity1].posX;
+				entities[entity1].targetY = targetDistanceFromPos*Math.cos(angle)+entities[entity1].posY;
+			}
+		} else {
+			if(entities[entity1].targetX>entities[entity2].posX){
+
+			} else {
+				
+			}
+		}
+	} else {
+		if(entities[entity1].posY>entities[entity2].posY){
+			if(entities[entity1].targetX>entities[entity2].posX){
+
+			} else {
+				
+			}
+		} else {
+			if(entities[entity1].targetX>entities[entity2].posX){
+
+			} else {
+				
+			}
+		}
+	}
+	/*if(entities[entity1].targetY<entities[entity2].posY){
+		entities[entity1].targetX = targetDistanceFromPos*Math.sin(angle)+entities[entity1].posX;
+		entities[entity1].targetY = targetDistanceFromPos*Math.cos(angle)+entities[entity1].posY;
+	} else {
+		entities[entity1].targetX = -targetDistanceFromPos*Math.sin(angle)+entities[entity1].posX;
+		entities[entity1].targetY = targetDistanceFromPos*Math.cos(angle)+entities[entity1].posY;
+	}*/
+}
 function removeEntity(entity){
 	entities.splice(entity,1);
 }
 function overlap(entity1,entity2){
+	margin = 0.15;
 	try {
-		if(entities[entity1].type==entities[entity2].type){
+		if(entity1==entity2){
 			return false;
 		}
-		radius1 = entities[entity1].width/2;
-		radius2 = entities[entity2].width/2;
+		radius1 = entities[entity1].dimensions.x/2;
+		radius2 = entities[entity2].dimensions.x/2;
 		distance = findDistance(entity1,entity2);
-		if(distance<=(radius1+radius2)){
-			//console.log(entities[entity1].name+" is overlapping "+entities[entity2].name);
+		if(distance<=(radius1+radius2-(margin*(radius1+radius2)))){
+			console.log(entities[entity1].name+" is overlapping "+entities[entity2].name);
 			return true;
 		} else {
 			return false;
@@ -210,10 +289,10 @@ function overlap(entity1,entity2){
 		//console.log(e.message);
 	}
 }
-function checkCollisions(){
-	for(n=0;n<collisionEvents.length;n++){
-		for(i=0;i<entities.length;i++){
-			for(j=0;j<entities.length;j++){
+function checkCollisions(){	
+	for(i=0;i<entities.length;i++){
+		for(j=0;j<entities.length;j++){
+			for(n=0;n<collisionEvents.length;n++){
 				if(overlap(i,j)){
 					collisionEvents[n](i,j);
 				}
@@ -226,11 +305,11 @@ function collisionEvent(event){
 }
 function clearStatuses(){
 	for(i=0;i<entities.length;i++){
-		entities[i].status=null;
+		entities[i].statuses=null;
 	}
 }
 function findDistance(i,j){
-	return Math.sqrt(Math.pow(entities[i].posX-entities[j].posX,2)+Math.pow(entities[i].posY-entities[j].posY,2));
+	return Math.sqrt(Math.pow(entities[i].positions.x-entities[j].positions.x,2)+Math.pow(entities[i].positions.y-entities[j].positions.y,2));
 }
 function timedEvent(timeframe,event){
 	if(loopNumber%(timeframe)==0){
