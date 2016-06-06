@@ -226,9 +226,7 @@ function collisionEvent(event){
 }
 function clearStatuses(){
 	for(i=0;i<entities.length;i++){
-		if(entities[i].status!='dead'){
-			entities[i].status=null;
-		}
+		entities[i].status=null;
 	}
 }
 function findDistance(i,j){
