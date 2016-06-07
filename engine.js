@@ -50,13 +50,19 @@ function event(action){
 	events.push(action);
 }
 function emptyEventQueue(){
-	for(i=0;i<events.length;i++){
-		events[i]();
+	for(j=0;j<entities.length;j++){
+		for(i=0;i<events.length;i++){
+			entity = entities[j];
+			events[i](entity);
+		}
 	}
 }
 function runMotionBehavior(){
-	for(i=0;i<motionBehaviors.length;i++){
-		motionBehaviors[i]();
+	for(j=0;j<entities.length;j++){
+		for(i=0;i<motionBehaviors.length;i++){
+			entity = entities[j];
+			motionBehaviors[i](entity);
+		}
 	}
 }
 function motionBehavior(behavior){
@@ -64,19 +70,23 @@ function motionBehavior(behavior){
 }
 function drawEntities(){
 	// set up entities with status colors and then check for them here.
+	
 	var ctx = gamespace.context;
-	for(i=0;i<entities.length;i++){
+	for(i=0;i<entities.length;i++){		
 		entity = entities[i];
-		ctx.drawImage(entity.image,entity.positions.x-(entity.dimensions.x/2), entity.positions.y-(entity.dimensions.y/2), entity.dimensions.x, entity.dimensions.y);
+		image = new Image();
+		image.src = entity.image;
+		ctx.drawImage(image,entity.positions.x-(entity.dimensions.x/2), entity.positions.y-(entity.dimensions.y/2), entity.dimensions.x, entity.dimensions.y);
 	}
 }
+function changeImage(entity,imagesrc){
+	entity.image = imagesrc;
+}
 function entity(name,type,imagesrc,mass,dimensionsArray,positionArray,speedArray,statusArray,gravity){
-	image = new Image();
-	image.src = imagesrc;
 	var newEntity = {
 		'name':name,
 		'type':type,
-		'image':image,
+		'image':imagesrc,
 		'mass':mass,
 		'dimensions':dimensionsArray,
 		'positions':positionArray,
@@ -257,14 +267,11 @@ function simpleBounceFloor(i,j,res){
 	return false;
 }*/
 function gravityComponent(amount){
-	events.push(function(){
-		for(i=0;i<entities.length;i++){
-			if(entities[i].gravity==true){
-				entities[i].speeds.y = amount + entities[i].speeds.y;
-			}
+	events.push(function(entity){
+		if(entity.gravity==true){
+			entity.speeds.y = amount + entity.speeds.y;
 		}
 	});
-	
 }
 function removeEntity(entity){
 	entities.splice(entity,1);
@@ -325,7 +332,7 @@ function clearStatuses(){
 	}
 }
 function findDistance(i,j){
-	return Math.sqrt(Math.pow(entities[i].positions.x-entities[j].positions.x,2)+Math.pow(entities[i].positions.y-entities[j].positions.y,2));
+	return pythagoreanC(entities[i].positions.x-entities[j].positions.x,entities[i].positions.y-entities[j].positions.y);
 }
 function timedEvent(timeframe,event){
 	if(loopNumber%(timeframe)==0){
@@ -334,6 +341,9 @@ function timedEvent(timeframe,event){
 }
 function randomLocatonOnMap(){
 	return Math.floor((Math.random()*gamespace.canvas.width)+1);
+}
+function pythagoreanC(value1,value2){
+	return Math.sqrt(Math.pow(value1,2)+Math.pow(value2,2));
 }
 gamestate = new gamestate();
 gamestate.start();
