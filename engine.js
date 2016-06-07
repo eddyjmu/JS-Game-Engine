@@ -1,10 +1,10 @@
 var loopNumber=0, fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0, gravity=0;
-var entities = []; var events = []; var collisionEvents = []; var mouseEvents = []; var motionBehaviors = []; var selectedEntities = [];
+var entities = []; var events = []; var collisionEvents = []; var mouseEvents = []; var keyEvents = []; var motionBehaviors = []; var selectedEntities = [];
 function gamespace(){
 	this.canvas = document.getElementById('gamespace');
 	this.initialize = function(){
-		this.canvas.width = 500;
-		this.canvas.height = 500;
+		this.canvas.width = 800;
+		this.canvas.height = 600;
 		this.context = this.canvas.getContext("2d");
 		document.body.insertBefore(this.canvas,document.body.childNodes[0]);
 	};
@@ -139,9 +139,26 @@ function mouseListener(){
 		mousePosY -= gamespace.canvas.offsetTop;
 	});*/
 }
-/*function keyPressListener(action){
-
-}*/
+function keyEvent(event){
+	keyEvents.push(event);
+}
+function keyListener(){
+	document.addEventListener('keydown',function(e){
+		//if(e.which==null){
+			//key = String.fromCharCode(e.keyCode);
+			key = e.keyCode;
+		/*} else if((e.which!=0)&&(e.charCode!=0)) {
+			//key = String.fromCharCode(e.which);
+			key = e.which;
+		} else {
+			key = null;
+		}*/
+		//console.log(key);
+		for(i=0;i<keyEvents.length;i++){
+			keyEvents[i](key);
+		}
+	},false);
+}
 /*function flightMode1(entity){
 	// instantly at speed, slow to stop
 	entities[entity].speedX = 2.5*(entities[entity].targetX - entities[entity].posX)/gamespace.canvas.width;
@@ -213,10 +230,20 @@ function bounce(entity1,entity2,restitution){
 	entities[entity2].speeds.x = entities[entity2].speeds.x + (entities[entity2].mass/totalMass)*totalSpeedX;
 	entities[entity2].speeds.y = entities[entity2].speeds.y + (entities[entity2].mass/totalMass)*totalSpeedY;
 }
-function simpleBounceWall(i,res){
+function simpleBounceWall(i,j,res){
+	if(entities[i].positions.x<entities[j].positions.x){
+		entities[i].positions.x = entities[j].positions.x - (entities[j].dimensions.x/2);
+	} else {		
+		entities[i].positions.x = entities[j].positions.x + (entities[j].dimensions.x/2);
+	}
 	entities[i].speeds.x = - res*entities[i].speeds.x;
 }
-function simpleBounceFloor(i,res){
+function simpleBounceFloor(i,j,res){
+	if(entities[i].positions.y<entities[j].positions.y){
+		entities[i].positions.y = entities[j].positions.y - (entities[j].dimensions.y/2);
+	} else {		
+		entities[i].positions.y = entities[j].positions.y + (entities[j].dimensions.y/2);
+	}
 	entities[i].speeds.y = - res*entities[i].speeds.y;
 }
 /*function hasStatus(entity,status){
