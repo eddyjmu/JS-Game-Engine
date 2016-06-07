@@ -5,51 +5,55 @@
 	// aka a game of pool
 	maxSpeed = 10;
 	friction = 0.1;
-	new mouseListener();
+	gravity = 0.5
+	//new mouseListener();
 	new keyListener();
 	new gravityComponent(0.5);
-	new motionBehavior(function(){
-		for(i=0;i<entities.length;i++){
-			/*if(entities[i].type=="ball"){
-				flightMode1(i);
-			}*/
-			speedMag = Math.sqrt(Math.pow(entities[i].speeds.x,2)+Math.pow(entities[i].speeds.y,2));
-			/*if(speedMag<0.1){
-				friction=friction*2;
-			}*/
-			entities[i].speeds.x = entities[i].speeds.x - friction*entities[i].speeds.x;
-			//entities[i].speeds.y = entities[i].speeds.y - friction*entities[i].speeds.y;
-			entities[i].positions.x += entities[i].speeds.x;
-			entities[i].positions.y += entities[i].speeds.y;
-			//speedMag = Math.sqrt(Math.pow(entities[i].speeds.x,2)+Math.pow(entities[i].speeds.y,2));
-			//console.log(speedMag);
-		}
+	new motionBehavior(function(entity){
+			speedMag = pythagoreanC(entity.speeds.x,entity.speeds.y);
+			entity.speeds.x = entity.speeds.x - friction*entity.speeds.x;
+			entity.positions.x += entity.speeds.x;
+			entity.positions.y += entity.speeds.y;
 	});
 	tableColor="rgba(66,147,92,1)";
-	new entity('bg','bg','http://vignette4.wikia.nocookie.net/gravityfalls/images/d/dc/Gravity_falls_forest.jpg/revision/latest?cb=20131229093003',0,{'x':800,'y':600},{'x':400,'y':300},{'x':0,'y':0},{},false);
-	new entity('cueball','ball','http://img11.deviantart.net/db33/i/2015/186/0/f/patrick_star_season_1_by_megarainbowdash2000-d9015sk.png',1.25,{'x':125,'y':200},{'x':250,'y':250},{'x':0,'y':0},{},true);	
-	//new entity('otherball','ball','circle.png',1,{'x':50,'y':50},{'x':300,'y':250},{'x':0,'y':0},{},true);	
+	new entity('bg','bg','http://vignette4.wikia.nocookie.net/gravityfalls/images/d/dc/Gravity_falls_forest.jpg/revision/latest?cb=20131229093003',0,{'x':1000,'y':600},{'x':400,'y':300},{'x':0,'y':0},{},false);
+	new entity('player1','character','patrick_right.png',1.25,{'x':125,'y':199},{'x':200,'y':250},{'x':0,'y':0},{},true);
+	new entity('computer','character','http://vignette4.wikia.nocookie.net/animaniacs/images/e/ec/Dot_.png/revision/latest?cb=20140212150817',1,{'x':100,'y':200},{'x':600,'y':250},{'x':0,'y':0},{},true);	
 	new entity('floor','floor','clear.png',1,{'x':800,'y':50},{'x':400,'y':500},{'x':0,'y':0},{},false);
 	new entity('wallleft','wall','clear.png',1,{'x':50,'y':600},{'x':0,'y':300},{'x':0,'y':0},{},false);
 	new entity('wallright','wall','clear.png',1,{'x':50,'y':600},{'x':800,'y':300},{'x':0,'y':0},{},false);
 	new entity('ceiling','floor','clear.png',1,{'x':800,'y':50},{'x':400,'y':0},{'x':0,'y':0},{},false);
-	new collisionEvent(function(entity1,entity2){
+	/*new collisionEvent(function(entity1,entity2){
 		if((entities[entity1].type=='ball')&&(entities[entity2].type=='ball')){
 			bounce(entity1,entity2,1);				
 		}
-	});
+	});*/
 	new collisionEvent(function(entity1,entity2){
-		if((entities[entity1].type=='ball')&&(entities[entity2].type=='wall')){
+		if((entities[entity1].type=='character')&&(entities[entity2].type=='wall')){
 			simpleBounceWall(entity1,entity2,0);
 		}
 	});
 	new collisionEvent(function(entity1,entity2){
-		if((entities[entity1].type=='ball')&&(entities[entity2].type=='floor')){
+		if((entities[entity1].type=='character')&&(entities[entity2].type=='floor')){
 			simpleBounceFloor(entity1,entity2,0);
 		}
 	});
-	new event(function(){
-		//console.log(findDistance(0,1));
+	new event(function(entity){
+		if(entity.name=='player1'){
+			if(entity.speeds.x>=0){
+				if(entity.positions.y<450){
+					changeImage(entity,'patrick_jump_right.png');
+				} else {
+					changeImage(entity,'patrick_right.png');
+				}
+			} else {
+				if(entity.positions.y<450){
+					changeImage(entity,'patrick_jump_left.png');
+				} else {
+					changeImage(entity,'patrick_left.png');
+				}
+			}
+		}
 	});
 	/*new mouseEvent(function(selected){
 		//selectedEntities.push(selected);
@@ -72,8 +76,13 @@
 	new keyEvent(function(key){
 		// problem here with the jump not always being completed due to no stashing of events
 		console.log(key);
-		if(key=='32'){
+		if((key=='32')||(key=='38')){
 			entities[1].speeds.y = -15;
+		}
+	});
+	new keyEvent(function(key){
+		if(key=='40'){
+			entities[1].speeds.y = 15;
 		}
 	});
 	new keyEvent(function(key){
