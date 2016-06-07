@@ -79,6 +79,11 @@ function drawEntities(){
 		ctx.drawImage(image,entity.positions.x-(entity.dimensions.x/2), entity.positions.y-(entity.dimensions.y/2), entity.dimensions.x, entity.dimensions.y);
 	}
 }
+/*function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Score: "+score, 8, 20);
+}*/
 function changeImage(entity,imagesrc){
 	entity.image = imagesrc;
 }
