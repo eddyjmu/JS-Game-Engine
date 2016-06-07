@@ -213,32 +213,11 @@ function bounce(entity1,entity2,restitution){
 	entities[entity2].speeds.x = entities[entity2].speeds.x + (entities[entity2].mass/totalMass)*totalSpeedX;
 	entities[entity2].speeds.y = entities[entity2].speeds.y + (entities[entity2].mass/totalMass)*totalSpeedY;
 }
-function simpleBounce(entity1,entity2){
-	gravity=0;
-	//if()
-
-
-
-
-
-
-
-	entities[entity1].speeds.x = - entities[entity1].speeds.x;
-	entities[entity1].speeds.y = - entities[entity1].speeds.y;
-	/*if((entities[entity1].positions.x - (entities[entity1].dimensions.x/2))<(entities[entity2].positions.x+(entities[entity2].dimensions.x/2))){
-
-		entities[entity1].speeds.x = -entities[entity1].speeds.x;
-	}
-	if((entities[entity1].positions.y - (entities[entity1].dimensions.y/2))<(entities[entity2].positions.y+(entities[entity2].dimensions.y/2))){
-		entities[entity1].speeds.y = -entities[entity1].speeds.y;
-	}			
-	if((entities[entity1].positions.x + (entities[entity1].dimensions.x/2))>(entities[entity2].positions.x-(entities[entity2].dimensions.x/2))){
-		entities[entity1].speeds.x = -entities[entity1].speeds.x;
-	}
-	if(entities[entity1].positions.y>(entities[entity2].positions.y-(entities[entity2].dimensions.y/2))){
-		console.log('bounce up');
-		entities[entity1].speeds.y = -entities[entity1].speeds.y;
-	}*/
+function simpleBounceWall(i,res){
+	entities[i].speeds.x = - res*entities[i].speeds.x;
+}
+function simpleBounceFloor(i,res){
+	entities[i].speeds.y = - res*entities[i].speeds.y;
 }
 /*function hasStatus(entity,status){
 	flag=false;
@@ -273,7 +252,7 @@ function overlap(entity1,entity2){
 			if(entities[entity1].positions.y<(entities[entity2].positions.y+(entities[entity2].dimensions.y/2))){
 				if(entities[entity1].positions.x>(entities[entity2].positions.x-(entities[entity2].dimensions.x/2))){
 					if(entities[entity1].positions.y>(entities[entity2].positions.y-(entities[entity2].dimensions.y/2))){
-						console.log(entities[entity1].name+" is overlapping "+entities[entity2].name);
+						//console.log(entities[entity1].name+" is overlapping "+entities[entity2].name);
 						return true;
 					}
 				}
