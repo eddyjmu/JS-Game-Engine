@@ -1,4 +1,4 @@
-var loopNumber=0, fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0;
+var loopNumber=0, fps = 50, mouseClickX = 0, mouseClickY = 0, mousePosX = 0, mousePosY = 0, gravity=0;
 var entities = []; var events = []; var collisionEvents = []; var mouseEvents = []; var motionBehaviors = []; var selectedEntities = [];
 function gamespace(){
 	this.canvas = document.getElementById('gamespace');
@@ -182,11 +182,11 @@ function flightMode3(entity){
 		}
 	}
 }*/
-function Bounce(entity1,entity2,restitution){
+function bounce(entity1,entity2,restitution){
+	// working - FUZZY BOUNCE
 	xDistance = entities[entity2].positions.x - entities[entity1].positions.x;
 	yDistance = entities[entity2].positions.y - entities[entity1].positions.y;
 	angle = Math.tan(xDistance/yDistance);
-	//console.log(angle);
 	totalSpeedX = entities[entity1].speeds.x + entities[entity2].speeds.x;
 	totalSpeedY = entities[entity1].speeds.y + entities[entity2].speeds.y;
 	totalMass = entities[entity1].mass + entities[entity2].mass;
@@ -194,78 +194,21 @@ function Bounce(entity1,entity2,restitution){
 	entities[entity1].speeds.y = entities[entity1].speeds.y - (entities[entity1].mass/totalMass)*totalSpeedY;
 	entities[entity2].speeds.x = entities[entity2].speeds.x + (entities[entity2].mass/totalMass)*totalSpeedX;
 	entities[entity2].speeds.y = entities[entity2].speeds.y + (entities[entity2].mass/totalMass)*totalSpeedY;
-	/*if(xDistance>0){
-
-	}*/
-	//entities[entity1].speeds.x = Math.cos(Math.atan(angle)) * entities[entity1].speeds.x;
-	//entities[entity1].speeds.y = Math.sin(Math.atan(angle)) * entities[entity1].speeds.y;
-	//entities[entity2].speeds.x = -Math.cos(Math.atan(angle)) * entities[entity2].speeds.x;
-	//entities[entity2].speeds.y = -Math.sin(Math.atan(angle)) * entities[entity2].speeds.y;
-	//console.log("1: "+entities[entity1].speeds.x+","+entities[entity1].speeds.y+"; 2: "+entities[entity2].speeds.x+","+entities[entity2].speeds.y);
+}
+function borderCollisions(){
+	events.push(function(){
+		for(i=0;i<entities.length;i++){
+			
+		}
+	})
+}
+function gravityComponent(amount){
+	events.push(function(){
+		for(i=0;i<entities.length;i++){
+			entities[i].speeds.y = amount + entities[i].speeds.y;
+		}
+	})
 	
-
-
-
-	//gamestate.stop();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*entitiesXDistance = entities[entity2].posX-entities[entity1].posX;
-	entitiesYDistance = entities[entity2].posY-entities[entity1].posY;
-	angle = Math.tan(entitiesXDistance/entitiesYDistance);
-	targetDistanceFromPos = Math.sqrt(Math.pow(entities[entity1].targetX-entities[entity1].posX,2)+Math.pow(entities[entity1].targetY-entities[entity1].posY,2));*/
-	/*if(entities[entity1].posX>entities[entity2].posX){
-		if(entities[entity1].posY>entities[entity2].posY){
-			if(entities[entity1].targetX>entities[entity2].posX){
-				entities[entity1].targetX = -targetDistanceFromPos*Math.sin(-angle)-entities[entity1].posX;
-				entities[entity1].targetY = targetDistanceFromPos*Math.cos(-angle)+entities[entity1].posY;
-			} else {
-				entities[entity1].targetX = targetDistanceFromPos*Math.sin(angle)+entities[entity1].posX;
-				entities[entity1].targetY = targetDistanceFromPos*Math.cos(angle)+entities[entity1].posY;
-			}
-		} else {
-			if(entities[entity1].targetX>entities[entity2].posX){
-
-			} else {
-				
-			}
-		}
-	} else {
-		if(entities[entity1].posY>entities[entity2].posY){
-			if(entities[entity1].targetX>entities[entity2].posX){
-
-			} else {
-				
-			}
-		} else {
-			if(entities[entity1].targetX>entities[entity2].posX){
-
-			} else {
-				
-			}
-		}
-	}
-	/*if(entities[entity1].targetY<entities[entity2].posY){
-		entities[entity1].targetX = targetDistanceFromPos*Math.sin(angle)+entities[entity1].posX;
-		entities[entity1].targetY = targetDistanceFromPos*Math.cos(angle)+entities[entity1].posY;
-	} else {
-		entities[entity1].targetX = -targetDistanceFromPos*Math.sin(angle)+entities[entity1].posX;
-		entities[entity1].targetY = targetDistanceFromPos*Math.cos(angle)+entities[entity1].posY;
-	}*/
 }
 function removeEntity(entity){
 	entities.splice(entity,1);
