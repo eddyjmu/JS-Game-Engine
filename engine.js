@@ -70,7 +70,7 @@ function drawEntities(){
 		ctx.drawImage(entity.image,entity.positions.x-(entity.dimensions.x/2), entity.positions.y-(entity.dimensions.y/2), entity.dimensions.x, entity.dimensions.y);
 	}
 }
-function entity(name,type,imagesrc,mass,dimensionsArray,positionArray,speedArray,statusArray){
+function entity(name,type,imagesrc,mass,dimensionsArray,positionArray,speedArray,statusArray,gravity){
 	image = new Image();
 	image.src = imagesrc;
 	var newEntity = {
@@ -82,6 +82,7 @@ function entity(name,type,imagesrc,mass,dimensionsArray,positionArray,speedArray
 		'positions':positionArray,
 		'speeds':speedArray,
 		'statuses':statusArray,
+		'gravity':gravity,
 	};
 	entities.push(newEntity);
 }
@@ -90,6 +91,23 @@ function log_info(info){
 }
 function whatIsSelected(){
 	for(i=0;i<entities.length;i++){
+		if(mouseClickX<(entities[i].positions.x+(entities[i].dimensions.x/2))){
+			if(mouseClickY<(entities[i].positions.y+(entities[i].dimensions.y/2))){
+				if(mouseClickX>(entities[i].positions.x-(entities[i].dimensions.x/2))){
+					if(mouseClickY>(entities[i].positions.y-(entities[i].dimensions.y/2))){
+						console.log(entities[i].name+" '"+entities[i].type+"' "+"has been selected");
+						return i;
+					}
+				}
+			}	
+		}
+	}
+	console.log('nothing selected');
+	return null;/*
+				
+		
+		
+		return false
 		entity = entities[i];
 		var radius = entity.dimensions.x/2;
 		var mouseClickDistance = Math.sqrt(Math.pow(mouseClickX-entity.positions.x,2)+Math.pow(mouseClickY-entity.positions.y,2));
@@ -99,7 +117,7 @@ function whatIsSelected(){
 		}
 	}
 	console.log('nothing selected');
-	return null;
+	return null;*/
 }
 function mouseEvent(event){
 	mouseEvents.push(event);
@@ -195,19 +213,51 @@ function bounce(entity1,entity2,restitution){
 	entities[entity2].speeds.x = entities[entity2].speeds.x + (entities[entity2].mass/totalMass)*totalSpeedX;
 	entities[entity2].speeds.y = entities[entity2].speeds.y + (entities[entity2].mass/totalMass)*totalSpeedY;
 }
-function borderCollisions(){
-	events.push(function(){
-		for(i=0;i<entities.length;i++){
-			
-		}
-	})
+function simpleBounce(entity1,entity2){
+	gravity=0;
+	//if()
+
+
+
+
+
+
+
+	entities[entity1].speeds.x = - entities[entity1].speeds.x;
+	entities[entity1].speeds.y = - entities[entity1].speeds.y;
+	/*if((entities[entity1].positions.x - (entities[entity1].dimensions.x/2))<(entities[entity2].positions.x+(entities[entity2].dimensions.x/2))){
+
+		entities[entity1].speeds.x = -entities[entity1].speeds.x;
+	}
+	if((entities[entity1].positions.y - (entities[entity1].dimensions.y/2))<(entities[entity2].positions.y+(entities[entity2].dimensions.y/2))){
+		entities[entity1].speeds.y = -entities[entity1].speeds.y;
+	}			
+	if((entities[entity1].positions.x + (entities[entity1].dimensions.x/2))>(entities[entity2].positions.x-(entities[entity2].dimensions.x/2))){
+		entities[entity1].speeds.x = -entities[entity1].speeds.x;
+	}
+	if(entities[entity1].positions.y>(entities[entity2].positions.y-(entities[entity2].dimensions.y/2))){
+		console.log('bounce up');
+		entities[entity1].speeds.y = -entities[entity1].speeds.y;
+	}*/
 }
+/*function hasStatus(entity,status){
+	flag=false;
+	//find if status is null
+	for(i=0;i<entity.statuses.length;i++){
+		if(entity.statuses[i]==status){
+			return true;
+		}
+	}
+	return false;
+}*/
 function gravityComponent(amount){
 	events.push(function(){
 		for(i=0;i<entities.length;i++){
-			entities[i].speeds.y = amount + entities[i].speeds.y;
+			if(entities[i].gravity==true){
+				entities[i].speeds.y = amount + entities[i].speeds.y;
+			}
 		}
-	})
+	});
 	
 }
 function removeEntity(entity){
@@ -219,6 +269,23 @@ function overlap(entity1,entity2){
 		if(entity1==entity2){
 			return false;
 		}
+		if(entities[entity1].positions.x<(entities[entity2].positions.x+(entities[entity2].dimensions.x/2))){
+			if(entities[entity1].positions.y<(entities[entity2].positions.y+(entities[entity2].dimensions.y/2))){
+				if(entities[entity1].positions.x>(entities[entity2].positions.x-(entities[entity2].dimensions.x/2))){
+					if(entities[entity1].positions.y>(entities[entity2].positions.y-(entities[entity2].dimensions.y/2))){
+						console.log(entities[entity1].name+" is overlapping "+entities[entity2].name);
+						return true;
+					}
+				}
+			}	
+		}
+		return false
+		/*
+
+
+
+
+
 		radius1 = entities[entity1].dimensions.x/2;
 		radius2 = entities[entity2].dimensions.x/2;
 		distance = findDistance(entity1,entity2);
@@ -227,7 +294,7 @@ function overlap(entity1,entity2){
 			return true;
 		} else {
 			return false;
-		}
+		}*/
 	} catch(e) {
 		//console.log(e.message);
 	}
