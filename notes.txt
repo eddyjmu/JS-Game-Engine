@@ -1,0 +1,31 @@
+// notes for game engine development
+
+1. key event stashing
+    figure out a way to stash key events such that they are carried out on the next available loop.
+    hopefully this will make multiple key-presses possible.
+    this is the same logic that i'm going to be using for server cloning
+2. server cloning
+    if entity is to be server-cloned, all statuses for that entity are stored in stash each loop
+    when the server-contact periodic event is ran, it sends the entity statuses via ajax post to the server API.
+    if entity is from server, its statuses are set by the ajax returned
+3. levels
+    i think this is going to be basically a new rewriting of the game engine...
+    i'm going to need a 'level' object and then add entities to those levels.
+    engine will run the '0' level first, which should always be the menu
+    activeLevel variable, so i don't have to loop through every level
+    i think events should be set to individual levels too for 
+        different ai behavior
+        different motion behavior
+        level-specific occurrences
+4. map movement
+    all entities for the level should be anchored to the level origin
+    if an entity is static, the level moves, and the entity moves to stay centered
+    if the level is static, the entity moves
+5. map rendering
+    if an enitity is off-screen and is set to only be rendered on screen, it should not be rendered
+    rendering will only occur for these entities if the gamespace and the entity overlap
+6. entity movement
+    each entity is assigned a separate motionBehavior
+    ai receive an AI motionBehavior
+    motionBehaviors are with respect to Level
+    centered motionBehaviors come in centeredFull, centeredX, and centeredY
