@@ -29,3 +29,10 @@
     ai receive an AI motionBehavior
     motionBehaviors are with respect to Level
     centered motionBehaviors come in centeredFull, centeredX, and centeredY
+7. text rendering
+    there's a way to render text on screen but i haven't played around with it enough to do this yet
+8. direction vector
+    i should make a direction vector from two locations, four positions
+    can js return arrays from functions? yes, as objects
+9. animations
+    it should be relatively simple to create an animation that, depending on the timeframe, pulls up a different image
